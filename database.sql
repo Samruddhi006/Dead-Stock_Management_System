@@ -329,7 +329,25 @@ CREATE TABLE IF NOT EXISTS SA_DEADSTOCK (
 );
 
 
--- OPTIONAL INDEXES
+-- Add ON DELETE SET NULL for branch_id in Deadstock table
+-- so that branch can be deleted even if it contains deadstock
+-- by sending that deadstock in warehouse 
+-- and archiving this branch in deleted-branch table
+
+ALTER TABLE deadstock 
+MODIFY Branch_ID INT NULL;
+
+ALTER TABLE deadstock
+DROP FOREIGN KEY deadstock_ibfk_1;
+
+ALTER TABLE deadstock
+ADD CONSTRAINT deadstock_ibfk_1
+FOREIGN KEY (Branch_ID)
+REFERENCES branch(Branch_ID)
+ON DELETE SET NULL;
+
+
+-- INDEXES
 
 CREATE INDEX idx_wd_deadstock
 ON warehouse_deadstock(Deadstock_ID);
@@ -363,20 +381,3 @@ DESCRIBE SA_DEADSTOCK;
 SELECT * FROM warehouse_deadstock;
 SELECT * FROM SA_DEADSTOCK;
 
-
--- Add ON DELETE SET NULL for branch_id in Deadstock table
--- so that branch can be deleted even if it contains deadstock
--- by sending that deadstock in warehouse 
--- and archiving this branch in deleted-branch table
-
-ALTER TABLE deadstock 
-MODIFY Branch_ID INT NULL;
-
-ALTER TABLE deadstock
-DROP FOREIGN KEY deadstock_ibfk_1;
-
-ALTER TABLE deadstock
-ADD CONSTRAINT deadstock_ibfk_1
-FOREIGN KEY (Branch_ID)
-REFERENCES branch(Branch_ID)
-ON DELETE SET NULL;
