@@ -193,7 +193,6 @@ def logout():
 
 # FORGOT PASSWORD / OTP RESET
 
-
 @app.route('/forgot_password/<role>', methods=['GET','POST'])
 def forgot_password(role):
     if role not in ['Admin','Branch','Warehouse','Stock_Allocation']:
