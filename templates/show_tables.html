@@ -1,0 +1,407 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8"><title>{{ table_name }}</title>
+  <style>
+    *{box-sizing:border-box;margin:0;padding:0}
+    body{font-family:'Segoe UI',sans-serif;background:#f4f6f9;min-height:100vh}
+    .topbar{background:#2d6a4f;color:white;display:flex;justify-content:center}
+    .topbar-inner{width:100%;max-width:1200px;padding:14px 24px;display:flex;justify-content:space-between;align-items:center}
+    .topbar h1{font-size:18px;font-weight:700}
+    .topbar a{color:white;text-decoration:none;background:rgba(255,255,255,.2);padding:6px 14px;border-radius:6px;font-size:13px}
+    .page{max-width:1200px;margin:0 auto;padding:32px 24px}
+    .back{display:inline-block;margin-bottom:20px;background:#2d6a4f;color:white;padding:8px 18px;border-radius:8px;text-decoration:none;font-size:13px;font-weight:600}
+    .back:hover{background:#1e4d37}
+    .page-title{font-size:22px;font-weight:700;color:#1a1a2e;margin-bottom:6px}
+    .page-title span{color:#2d6a4f}
+    .count{font-size:13px;color:#888;margin-bottom:16px}
+    .filter-bar{background:white;border-radius:10px;padding:14px 18px;box-shadow:0 1px 6px rgba(0,0,0,.06);margin-bottom:16px;display:flex;gap:10px;align-items:flex-end;flex-wrap:wrap}
+    .filter-bar .fg{display:flex;flex-direction:column;gap:4px}
+    .filter-bar label{font-size:12px;font-weight:600;color:#555}
+    .filter-bar select,.filter-bar input[type=text]{padding:7px 11px;border:1px solid #ddd;border-radius:7px;font-size:13px;min-width:130px}
+    .filter-bar select:focus,.filter-bar input:focus{outline:none;border-color:#2d6a4f}
+    .fb-btn{padding:8px 16px;background:#2d6a4f;color:white;border:none;border-radius:7px;font-size:13px;font-weight:600;cursor:pointer;align-self:flex-end}
+    .fb-btn:hover{background:#1e4d37}
+    .fb-clr{padding:8px 14px;font-size:13px;color:#666;text-decoration:none;border:1px solid #ddd;border-radius:7px;align-self:flex-end}
+    .fb-clr:hover{background:#f0f0f0}
+    .sa-info{background:#fffde7;border-radius:10px;padding:14px 18px;margin-bottom:16px;border:1px solid #ffe082;font-size:13px;color:#795500}
+    .table-wrap{background:white;border-radius:12px;overflow-x:auto;box-shadow:0 2px 10px rgba(0,0,0,.07)}
+    table{width:100%;border-collapse:collapse}
+    thead{background:#2d6a4f;color:white}
+    th{padding:13px 16px;text-align:left;font-size:13px;font-weight:600;white-space:nowrap}
+    td{padding:12px 16px;font-size:13px;color:#333;border-bottom:1px solid #f0f0f0;white-space:nowrap}
+    tr:last-child td{border-bottom:none}
+    tr:hover td{background:#f9fffe}
+    .empty{text-align:center;padding:48px;color:#aaa;font-size:14px}
+    .del-btn{background:#fde8e8;color:#922;border:1px solid #f5c6c6;padding:5px 12px;border-radius:6px;font-size:12px;font-weight:600;cursor:pointer}
+    .del-btn:hover{background:#fcc}
+    .upd-btn{background:#fff8e1;color:#795500;border:1px solid #ffe082;padding:5px 12px;border-radius:6px;font-size:12px;font-weight:600;text-decoration:none;display:inline-block}
+    .upd-btn:hover{background:#fff3cd}
+    .send-btn{background:#e8f5e9;color:#2d6a4f;border:1px solid #a5d6a7;padding:5px 12px;border-radius:6px;font-size:12px;font-weight:600;cursor:pointer}
+    .send-btn:hover{background:#c8e6c9}
+    .alloc-btn{padding:4px 9px;border-radius:5px;font-size:11px;font-weight:600;cursor:pointer;margin:2px;border:none}
+    .alloc-recycle{background:#e8f5e9;color:#2d6a4f;border:1px solid #a5d6a7}.alloc-recycle:hover{background:#c8e6c9}
+    .alloc-donate{background:#e3f2fd;color:#1565c0;border:1px solid #90caf9}.alloc-donate:hover{background:#bbdefb}
+    .alloc-resell{background:#fff3e0;color:#e65100;border:1px solid #ffcc80}.alloc-resell:hover{background:#ffe0b2}
+    .alloc-upcycle{background:#fce4ec;color:#880e4f;border:1px solid #f48fb1}.alloc-upcycle:hover{background:#f8bbd0}
+    .alloc-rebrand{background:#ede7f6;color:#4a148c;border:1px solid #ce93d8}.alloc-rebrand:hover{background:#d1c4e9}
+    .alloc-disposal{background:#eceff1;color:#37474f;border:1px solid #b0bec5}.alloc-disposal:hover{background:#cfd8dc}
+    .sent-label{color:#aaa;font-size:12px}
+    .allocated-label{color:#2d6a4f;font-size:12px;font-weight:600}
+    .action-cell{display:flex;gap:6px;align-items:center;flex-wrap:wrap}
+    /* Deleted branch badge — shown in the Action column instead of Delete button */
+    .deleted-badge{display:inline-block;padding:4px 10px;background:#eceff1;color:#546e7a;border:1px solid #b0bec5;border-radius:6px;font-size:11px;font-weight:700;letter-spacing:.4px}
+    /* Highlight entire row for deleted-branch deadstock */
+    tr.deleted-branch-row td{background:#fafafa;color:#888}
+    tr.deleted-branch-row:hover td{background:#f4f4f4}
+    .del-branch-tag{display:inline-block;font-size:10px;font-weight:700;background:#eceff1;color:#546e7a;border:1px solid #cfd8dc;border-radius:4px;padding:1px 6px;margin-left:4px;vertical-align:middle}
+  </style>
+</head>
+<body>
+<div class="topbar">
+  <div class="topbar-inner">
+    <h1>♻ Deadstock Inventory</h1>
+    <a href="/dashboard">← Dashboard</a>
+  </div>
+</div>
+<div class="page">
+  <a href="/dashboard" class="back">← Dashboard</a>
+  <div class="page-title">Table: <span>{{ table_name }}</span></div>
+  <div class="count">{{ rows|length }} record(s) found</div>
+
+  {% if branch_delete_error %}
+  <div style="margin-bottom:16px;padding:14px 18px;background:#fde8e8;color:#922;border:1px solid #f5c6c6;border-radius:10px;font-size:13px;font-weight:500">
+    ⚠ {{ branch_delete_error }}
+  </div>
+  {% endif %}
+
+  {# ════ FILTER BARS ════ #}
+
+  {# BRANCH – Admin city filter #}
+  {% if table_name == 'BRANCH' and session['role'] == 'Admin' %}
+  <form class="filter-bar" method="GET">
+    <div class="fg"><label>City</label>
+      <select name="f_city">
+        <option value="">All Cities</option>
+        {% for c in all_cities_br %}<option value="{{ c }}" {% if f_city==c %}selected{% endif %}>{{ c }}</option>{% endfor %}
+      </select>
+    </div>
+    <button class="fb-btn" type="submit">Filter</button>
+    <a class="fb-clr" href="/show/BRANCH">Clear</a>
+  </form>
+  {% endif %}
+
+  {# BRANCH – Warehouse role city filter #}
+  {% if table_name == 'BRANCH' and session['role'] == 'Warehouse' %}
+  <form class="filter-bar" method="GET">
+    <div class="fg"><label>Filter by City</label>
+      <select name="f_city">
+        <option value="">All Cities</option>
+        {% for c in all_cities_br %}<option value="{{ c }}" {% if f_city==c %}selected{% endif %}>{{ c }}</option>{% endfor %}
+      </select>
+    </div>
+    <button class="fb-btn" type="submit">Filter</button>
+    <a class="fb-clr" href="/show/BRANCH">Clear</a>
+  </form>
+  {% endif %}
+
+  {# WAREHOUSE – Admin city filter #}
+  {% if table_name == 'WAREHOUSE' and session['role'] == 'Admin' %}
+  <form class="filter-bar" method="GET">
+    <div class="fg"><label>City</label>
+      <select name="f_city">
+        <option value="">All Cities</option>
+        {% for c in all_cities_wh %}<option value="{{ c }}" {% if f_city==c %}selected{% endif %}>{{ c }}</option>{% endfor %}
+      </select>
+    </div>
+    <button class="fb-btn" type="submit">Filter</button>
+    <a class="fb-clr" href="/show/WAREHOUSE">Clear</a>
+  </form>
+  {% endif %}
+
+  {# DEADSTOCK filters #}
+  {% if table_name == 'DEADSTOCK' %}
+  <form class="filter-bar" method="GET">
+    {% if session['role'] == 'Admin' %}
+    <div class="fg"><label>Branch</label>
+      <select name="f_branch">
+        <option value="">All Branches</option>
+        {% for b in all_branches %}<option value="{{ b[0] }}" {% if f_branch|string==b[0]|string %}selected{% endif %}>{{ b[0] }} – {{ b[1] }}</option>{% endfor %}
+      </select>
+    </div>
+    {% endif %}
+    <div class="fg"><label>Category</label>
+      <input type="text" name="f_category" value="{{ f_category }}" placeholder="e.g. T-Shirts">
+    </div>
+    <div class="fg"><label>Size</label>
+      <select name="f_size">
+        <option value="">All Sizes</option>
+        {% for s in all_sizes %}<option value="{{ s }}" {% if f_size==s %}selected{% endif %}>{{ s }}</option>{% endfor %}
+      </select>
+    </div>
+    {% if session['role'] in ['Admin','Stock_Allocation'] %}
+    <div class="fg"><label>Allocated Type</label>
+      <select name="f_alloc">
+        <option value="">All</option>
+        <option value="__none__" {% if f_alloc=='__none__' %}selected{% endif %}>Not Allocated</option>
+        {% for a in all_alloc %}<option value="{{ a }}" {% if f_alloc==a %}selected{% endif %}>{{ a }}</option>{% endfor %}
+      </select>
+    </div>
+    {% endif %}
+    {% if session['role'] == 'Admin' %}
+    <div class="fg"><label>Sent to WH</label>
+      <select name="f_sent_wh">
+        <option value="">Any</option>
+        <option value="1" {% if f_sent_wh=='1' %}selected{% endif %}>Yes</option>
+        <option value="0" {% if f_sent_wh=='0' %}selected{% endif %}>No</option>
+      </select>
+    </div>
+    <div class="fg"><label>Sent to SA</label>
+      <select name="f_sent_sa">
+        <option value="">Any</option>
+        <option value="1" {% if f_sent_sa=='1' %}selected{% endif %}>Yes</option>
+        <option value="0" {% if f_sent_sa=='0' %}selected{% endif %}>No</option>
+      </select>
+    </div>
+    {% endif %}
+    <button class="fb-btn" type="submit">Filter</button>
+    <a class="fb-clr" href="/show/DEADSTOCK">Clear</a>
+  </form>
+  {% endif %}
+
+  {# STOCK_ALLOCATION filters #}
+  {% if table_name == 'STOCK_ALLOCATION' %}
+  <form class="filter-bar" method="GET">
+    <div class="fg"><label>Branch</label>
+      <select name="f_branch">
+        <option value="">All Branches</option>
+        {% for b in all_branches %}<option value="{{ b[0] }}" {% if f_branch|string==b[0]|string %}selected{% endif %}>{{ b[0] }} – {{ b[1] }}</option>{% endfor %}
+      </select>
+    </div>
+    <div class="fg"><label>Allocation Type</label>
+      <select name="f_alloc">
+        <option value="">All Types</option>
+        {% for a in all_alloc %}<option value="{{ a }}" {% if f_alloc==a %}selected{% endif %}>{{ a }}</option>{% endfor %}
+      </select>
+    </div>
+    <button class="fb-btn" type="submit">Filter</button>
+    <a class="fb-clr" href="/show/STOCK_ALLOCATION">Clear</a>
+  </form>
+  {% endif %}
+
+  {# CONTACTS filter #}
+  {% if table_name == 'CONTACTS' %}
+  <form class="filter-bar" method="GET">
+    <div class="fg"><label>Role</label>
+      <select name="f_role">
+        <option value="">All Roles</option>
+        {% for r in all_roles %}<option value="{{ r }}" {% if f_role==r %}selected{% endif %}>{{ r|replace('_',' ') }}</option>{% endfor %}
+      </select>
+    </div>
+    <button class="fb-btn" type="submit">Filter</button>
+    <a class="fb-clr" href="/show/CONTACTS">Clear</a>
+  </form>
+  {% endif %}
+
+  {# MATERIAL filter #}
+  {% if table_name == 'MATERIAL' %}
+  <form class="filter-bar" method="GET">
+    <div class="fg"><label>Sustainability Quality</label>
+      <select name="f_sq">
+        <option value="">All</option>
+        {% for q in all_sq %}<option value="{{ q }}" {% if f_sq==q %}selected{% endif %}>{{ q }}</option>{% endfor %}
+      </select>
+    </div>
+    <button class="fb-btn" type="submit">Filter</button>
+    <a class="fb-clr" href="/show/MATERIAL">Clear</a>
+  </form>
+  {% endif %}
+
+  {# SA allocation hint #}
+  {% if session['role'] == 'Stock_Allocation' and table_name == 'DEADSTOCK' %}
+  <div class="sa-info">
+    <strong>Allocate items below:</strong> Use the buttons in each row to allocate deadstock. Once allocated the type is shown and buttons are removed.
+  </div>
+  {% endif %}
+
+  {# ════ TABLE ════ #}
+  <div class="table-wrap">
+    {% if rows %}
+    <table>
+      <thead>
+        <tr>
+          {% for h in headers %}<th>{{ h }}</th>{% endfor %}
+          {% if (table_name in ['BRANCH','WAREHOUSE'] and session['role']=='Admin')
+              or (table_name=='DEADSTOCK' and session['role'] in ['Branch','Warehouse','Stock_Allocation']) %}
+          <th>Action</th>
+          {% endif %}
+        </tr>
+      </thead>
+      <tbody>
+        {% for row in rows %}
+
+        {#
+          ── BRANCH TABLE (Admin view) ──────────────────────────────────
+          row indices: [0]=Branch_ID [1]=Warehouse_ID [2]=Head_ID
+                       [3]=City [4]=Last_Audit [5]=Sustainable_Rating
+                       [6]=is_deleted  (0=active, 1=deleted — extra column for Admin UNION query)
+          Active branches show a Delete button.
+          Deleted branches show a "Deleted" badge instead.
+        #}
+        {% if table_name=='BRANCH' and session['role']=='Admin' %}
+        {% set is_deleted = (row|length > 6 and row[6] == 1) %}
+        <tr {% if is_deleted %}style="opacity:.7;background:#fafafa"{% endif %}>
+          {# Render only the first 6 data columns (skip is_deleted flag) #}
+          {% for cell in row[:6] %}<td>{{ cell if cell is not none else '—' }}</td>{% endfor %}
+          <td>
+            {% if is_deleted %}
+              <span class="deleted-badge">✕ Deleted</span>
+            {% else %}
+              <form method="POST" action="/delete/branch/{{ row[0] }}"
+                    onsubmit="return confirm('Delete Branch #{{ row[0] }} – {{ row[3] }}?\n\nAll deadstock will be preserved and transferred to the warehouse for processing.')"
+                    style="display:inline">
+                <button type="submit" class="del-btn">Delete</button>
+              </form>
+            {% endif %}
+          </td>
+        </tr>
+
+        {# ── WAREHOUSE TABLE (Admin view) ───────────────────────────────── #}
+        {% elif table_name=='WAREHOUSE' and session['role']=='Admin' %}
+        <tr>
+          {% for cell in row %}<td>{{ cell if cell is not none else '—' }}</td>{% endfor %}
+          <td>
+            <div class="action-cell">
+              <a href="/update_warehouse/{{ row[0] }}" class="upd-btn">Update</a>
+              <form method="POST" action="/delete/warehouse/{{ row[0] }}"
+                    onsubmit="return confirm('Proceed to reassign branches before deleting this warehouse?')"
+                    style="display:inline">
+                <button type="submit" class="del-btn">Delete</button>
+              </form>
+            </div>
+          </td>
+        </tr>
+
+        {#
+          ── DEADSTOCK TABLE (Branch role) ──────────────────────────────
+          Query: SELECT * FROM DEADSTOCK WHERE Branch_ID=... AND Sent_To_Warehouse=0
+          row indices: [0]=ID [1]=Branch_ID [2]=Category [3]=Size
+                       [4]=Material_ID [5]=Quantity [6]=Sent_To_Warehouse [7]=Sent_To_SA [8]=Allocated_Type
+        #}
+        {% elif table_name=='DEADSTOCK' and session['role']=='Branch' %}
+        <tr>
+          {% for cell in row %}<td>{{ cell if cell is not none else '—' }}</td>{% endfor %}
+          <td>
+            {% if row[6] == 0 %}
+            <form method="POST" action="/send_to_warehouse/{{ row[0] }}"
+                  onsubmit="return confirm('Send this item to the warehouse?')">
+              <button type="submit" class="send-btn">Send to Warehouse</button>
+            </form>
+            {% else %}
+            <span class="sent-label">Sent ✓</span>
+            {% endif %}
+          </td>
+        </tr>
+
+        {#
+          ── DEADSTOCK TABLE (Warehouse role) ───────────────────────────
+          Query uses LEFT JOIN + DELETED_BRANCH; includes BranchCity column.
+          row indices: [0]=ID [1]=Branch_ID [2]=BranchCity [3]=Category [4]=Size
+                       [5]=Material_ID [6]=Quantity [7]=Sent_To_Warehouse [8]=Sent_To_SA
+          Deleted branch rows show a "(Deleted Branch)" tag next to branch city.
+          The "Send to SA" button still works for orphaned deadstock.
+        #}
+        {% elif table_name=='DEADSTOCK' and session['role']=='Warehouse' %}
+        {% set is_deleted_br = (row[2] == 'Deleted Branch' or row[2] is none) %}
+        <tr {% if is_deleted_br %}class="deleted-branch-row"{% endif %}>
+          <td>{{ row[0] }}</td>
+          <td>{{ row[1] }}</td>
+          <td>
+            {{ row[2] if row[2] else '—' }}
+            {% if is_deleted_br %}<span class="del-branch-tag">DELETED</span>{% endif %}
+          </td>
+          <td>{{ row[3] if row[3] is not none else '—' }}</td>
+          <td>{{ row[4] if row[4] is not none else '—' }}</td>
+          <td>{{ row[5] if row[5] is not none else '—' }}</td>
+          <td>{{ row[6] if row[6] is not none else '—' }}</td>
+          <td>{{ row[7] if row[7] is not none else '—' }}</td>
+          <td>{{ row[8] if row[8] is not none else '—' }}</td>
+          <td>
+            {% if row[8] == 0 %}
+            <form method="POST" action="/send_to_sa/{{ row[0] }}"
+                  onsubmit="return confirm('Send this item to Stock Allocation Head?')">
+              <button type="submit" class="send-btn">Send to SA</button>
+            </form>
+            {% else %}
+            <span class="sent-label">Sent ✓</span>
+            {% endif %}
+          </td>
+        </tr>
+
+        {#
+          ── DEADSTOCK TABLE (Admin role) ───────────────────────────────
+          Query uses LEFT JOIN + DELETED_BRANCH; includes BranchCity column.
+          row indices: [0]=ID [1]=Branch_ID [2]=BranchCity [3]=Category [4]=Size
+                       [5]=Material_ID [6]=Quantity [7]=Sent_To_WH [8]=Sent_To_SA [9]=Allocated_Type
+          Deleted branch rows show "(Deleted Branch)" tag but still fully visible.
+        #}
+        {% elif table_name=='DEADSTOCK' and session['role']=='Admin' %}
+        {% set is_deleted_br = (row[2] == 'Deleted Branch' or row[2] is none) %}
+        <tr {% if is_deleted_br %}class="deleted-branch-row"{% endif %}>
+          <td>{{ row[0] }}</td>
+          <td>{{ row[1] }}</td>
+          <td>
+            {{ row[2] if row[2] else '—' }}
+            {% if is_deleted_br %}<span class="del-branch-tag">DELETED</span>{% endif %}
+          </td>
+          <td>{{ row[3] if row[3] is not none else '—' }}</td>
+          <td>{{ row[4] if row[4] is not none else '—' }}</td>
+          <td>{{ row[5] if row[5] is not none else '—' }}</td>
+          <td>{{ row[6] if row[6] is not none else '—' }}</td>
+          <td>{{ row[7] if row[7] is not none else '—' }}</td>
+          <td>{{ row[8] if row[8] is not none else '—' }}</td>
+          <td>{{ row[9] if row[9] is not none else '—' }}</td>
+        </tr>
+
+        {#
+          ── DEADSTOCK TABLE (Stock_Allocation role) ─────────────────────
+          Query: SELECT * FROM DEADSTOCK WHERE Sent_To_SA=1
+          row indices: [0]=ID [1]=Branch_ID [2]=Category [3]=Size
+                       [4]=Material_ID [5]=Quantity [6]=Sent_To_WH [7]=Sent_To_SA [8]=Allocated_Type
+        #}
+        {% elif table_name=='DEADSTOCK' and session['role']=='Stock_Allocation' %}
+        <tr>
+          {% for cell in row %}<td>{{ cell if cell is not none else '—' }}</td>{% endfor %}
+          <td>
+            {% if row[8] is none %}
+            <form method="POST" action="/allocate/{{ row[0] }}" style="display:inline">
+              <button type="submit" name="alloc_type" value="Recycle"  class="alloc-btn alloc-recycle">Recycle</button>
+              <button type="submit" name="alloc_type" value="Donate"   class="alloc-btn alloc-donate">Donate</button>
+              <button type="submit" name="alloc_type" value="Resell"   class="alloc-btn alloc-resell">Resell</button>
+              <button type="submit" name="alloc_type" value="Upcycle"  class="alloc-btn alloc-upcycle">Upcycle</button>
+              <button type="submit" name="alloc_type" value="Rebrand"  class="alloc-btn alloc-rebrand">Rebrand</button>
+              <button type="submit" name="alloc_type" value="Disposal" class="alloc-btn alloc-disposal">Disposal</button>
+            </form>
+            {% else %}
+            <span class="allocated-label">{{ row[8] }} ✓</span>
+            {% endif %}
+          </td>
+        </tr>
+
+        {# ── ALL OTHER TABLES (generic row render) ──────────────────────── #}
+        {% else %}
+        <tr>
+          {% for cell in row %}<td>{{ cell if cell is not none else '—' }}</td>{% endfor %}
+        </tr>
+        {% endif %}
+
+        {% endfor %}
+      </tbody>
+    </table>
+    {% else %}
+    <div class="empty">No records found in {{ table_name }}.</div>
+    {% endif %}
+  </div>
+</div>
+</body>
+</html>
