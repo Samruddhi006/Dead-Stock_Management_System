@@ -10,7 +10,7 @@ from email.mime.text import MIMEText
 from datetime import datetime, timedelta
 from functools import wraps
 
-# ── ReportLab ──────────────────────────────────────────────────────
+# ReportLab -> for creating pdf of report and give option for downloading it.
 from reportlab.lib.pagesizes import A4
 from reportlab.lib import colors
 from reportlab.lib.units import mm
@@ -24,11 +24,11 @@ app.secret_key = 'deadstock_secret_key_2024'
 
 DB_CONFIG = dict(host='127.0.0.1', user='root', password='Samruddhi@123', database='deadstock_db')
 
-# ── Email config ────────────────────────────────────────────────────
-MAIL_SENDER   = 'shalakaparhad21@gmail.com'      # ← change to your Gmail
-MAIL_PASSWORD = 'uozu otzm cpfm vujk'         # ← change to your App Password
+# Email config
+MAIL_SENDER   = 'shalakaparhad21@gmail.com'      
+MAIL_PASSWORD = 'uozu otzm cpfm vujk'         
 
-# ── In-memory OTP store ─────────────────────────────────────────────
+# In-memory OTP store
 otp_store = {}  # keyed by email
 
 def get_db():
@@ -129,16 +129,16 @@ def send_otp_email(to_email, otp):
 def jinja_enumerate(iterable):
     return list(enumerate(iterable))
 
-# ══════════════════════════════════════════════════════════════════
+
 # LANDING
-# ══════════════════════════════════════════════════════════════════
+
 @app.route('/')
 def landing():
     return render_template('landing.html')
 
-# ══════════════════════════════════════════════════════════════════
+
 # LOGIN  –  blocks deleted-branch/warehouse heads
-# ══════════════════════════════════════════════════════════════════
+
 @app.route('/login/<role>', methods=['GET','POST'])
 def login(role):
     if role not in ['Admin','Branch','Warehouse','Stock_Allocation']:
@@ -190,9 +190,9 @@ def logout():
     session.clear()
     return redirect(url_for('landing'))
 
-# ══════════════════════════════════════════════════════════════════
-# CHANGE SET 1 – FORGOT PASSWORD / OTP RESET
-# ══════════════════════════════════════════════════════════════════
+
+# FORGOT PASSWORD / OTP RESET
+
 
 @app.route('/forgot_password/<role>', methods=['GET','POST'])
 def forgot_password(role):
@@ -359,9 +359,9 @@ def reset_password():
                            email=email, token=token,
                            error=None, success=None, role=entry['role'])
 
-# ══════════════════════════════════════════════════════════════════
+
 # DASHBOARD
-# ══════════════════════════════════════════════════════════════════
+
 @app.route('/dashboard')
 @login_required
 def dashboard():
@@ -435,9 +435,9 @@ def dashboard():
     cur.close(); db.close()
     return render_template('dashboard.html', tables=tables, stats=stats)
 
-# ══════════════════════════════════════════════════════════════════
-# SHOW TABLE  –  CHANGE SET 2: LEFT JOINs for Warehouse & Admin
-# ══════════════════════════════════════════════════════════════════
+
+# SHOW TABLE  –  LEFT JOINs for Warehouse & Admin
+
 @app.route('/show/<table_name>', methods=['GET'])
 @login_required
 def show_table(table_name):
@@ -652,9 +652,9 @@ def show_table(table_name):
                            branch_delete_error=branch_delete_error)
 
     
-# ══════════════════════════════════════════════════════════════════
+    
 # SHOW HEADS
-# ══════════════════════════════════════════════════════════════════
+
 @app.route('/show/heads')
 @login_required
 @role_required('Admin')
@@ -675,9 +675,9 @@ def show_heads():
     return render_template('show_heads.html', rows=rows, f_role=f_role, f_name=f_name,
                            all_roles=['Branch','Warehouse','Stock_Allocation'])
 
-# ══════════════════════════════════════════════════════════════════
+
 # ADMIN BRANCH REPORT
-# ══════════════════════════════════════════════════════════════════
+
 @app.route('/admin_branch_report')
 @login_required
 @role_required('Admin')
@@ -699,9 +699,9 @@ def admin_branch_report():
     cur.close(); db.close()
     return render_template('admin_branch_report.html', rows=rows)
 
-# ══════════════════════════════════════════════════════════════════
+
 # UPDATE WAREHOUSE
-# ══════════════════════════════════════════════════════════════════
+
 @app.route('/update_warehouse/<int:wh_id>', methods=['GET','POST'])
 @login_required
 @role_required('Admin')
@@ -723,9 +723,9 @@ def update_warehouse(wh_id):
     cur.close(); db.close()
     return render_template('update_warehouse.html', warehouse=warehouse, heads=heads, msg=msg)
 
-# ══════════════════════════════════════════════════════════════════
+
 # ADD ROUTES
-# ══════════════════════════════════════════════════════════════════
+
 @app.route('/add/deadstock', methods=['GET','POST'])
 @login_required
 @role_required('Branch')
@@ -746,7 +746,7 @@ def add_deadstock():
     cur.close(); db.close()
     return render_template('add_deadstock.html', materials=materials, msg=msg)
 
-# CHANGE SET 3: Only unassigned Branch heads in dropdown; enforce one-head-one-branch
+# Only unassigned Branch heads in dropdown; enforce one-head-one-branch
 @app.route('/add/branch', methods=['GET','POST'])
 @login_required
 @role_required('Admin')
@@ -761,7 +761,7 @@ def add_branch():
         elif not head_id:
             msg = ('error','Branch Head is required.')
         else:
-            # CHANGE SET 3: Check one-head-one-branch
+            # Check one-head-one-branch
             cur.execute("SELECT Branch_ID FROM BRANCH WHERE Head_ID=%s LIMIT 1", (head_id,))
             if cur.fetchone():
                 msg = ('error','This Head is already managing a branch. One head can only manage one branch at a time.')
@@ -780,7 +780,7 @@ def add_branch():
                     msg = ('error',f'Error: {e}')
     cur.execute("SELECT Warehouse_ID,City FROM WAREHOUSE ORDER BY City")
     warehouses = cur.fetchall()
-    # CHANGE SET 3: Only Branch heads NOT already assigned to any branch
+    # Only Branch heads NOT already assigned to any branch
     cur.execute("""SELECT h.Head_ID,h.Name FROM HEAD h
                    WHERE h.Status='Branch'
                    AND h.Head_ID NOT IN (SELECT Head_ID FROM BRANCH)
@@ -789,7 +789,7 @@ def add_branch():
     cur.close(); db.close()
     return render_template('add_branch.html', warehouses=warehouses, heads=heads, msg=msg)
 
-# CHANGE SET 3: Only unassigned Warehouse heads in dropdown; enforce one-head-one-warehouse
+# Only unassigned Warehouse heads in dropdown; enforce one-head-one-warehouse
 @app.route('/add/warehouse', methods=['GET','POST'])
 @login_required
 @role_required('Admin')
@@ -801,7 +801,7 @@ def add_warehouse():
         if not head_id:
             msg = ('error','Warehouse Head is required.')
         else:
-            # CHANGE SET 3: Check one-head-one-warehouse
+            # Check one-head-one-warehouse
             cur.execute("SELECT Warehouse_ID FROM WAREHOUSE WHERE Head_ID=%s LIMIT 1", (head_id,))
             if cur.fetchone():
                 msg = ('error','This Head is already managing a warehouse. One head can only manage one warehouse at a time.')
@@ -813,7 +813,7 @@ def add_warehouse():
                     db.commit(); msg = ('success','Warehouse added successfully.')
                 except Exception as e:
                     msg = ('error',f'Error: {e}')
-    # CHANGE SET 3: Only Warehouse heads NOT already assigned to any warehouse
+    # Only Warehouse heads NOT already assigned to any warehouse
     cur.execute("""SELECT h.Head_ID,h.Name FROM HEAD h
                    WHERE h.Status='Warehouse'
                    AND h.Head_ID NOT IN (SELECT Head_ID FROM WAREHOUSE)
@@ -893,9 +893,9 @@ def add_material():
     cur.close(); db.close()
     return render_template('add_material.html', msg=msg)
 
-# ══════════════════════════════════════════════════════════════════
+
 # REPORT – Branch read-only
-# ══════════════════════════════════════════════════════════════════
+
 @app.route('/view_report')
 @login_required
 @role_required('Branch')
@@ -909,9 +909,9 @@ def view_report():
     cur.close(); db.close()
     return render_template('report.html', report=report, msg=None)
 
-# ══════════════════════════════════════════════════════════════════
+
 # SA BRANCH REPORT
-# ══════════════════════════════════════════════════════════════════
+
 @app.route('/sa_branch_report')
 @login_required
 @role_required('Stock_Allocation')
@@ -944,9 +944,9 @@ def sa_branch_report():
     return render_template('sa_branch_report.html', rows=rows,
                            alloc_totals=alloc_totals, alloc_colors=ALLOC_COLOR_MAP)
 
-# ══════════════════════════════════════════════════════════════════
+
 # SEND ROUTES
-# ══════════════════════════════════════════════════════════════════
+
 @app.route('/send_to_warehouse/<int:deadstock_id>', methods=['POST'])
 @login_required
 @role_required('Branch')
@@ -991,9 +991,9 @@ def send_to_sa(deadstock_id):
         cur.close(); db.close()
     return redirect(url_for('show_table', table_name='DEADSTOCK'))
 
-# ══════════════════════════════════════════════════════════════════
+
 # ALLOCATE
-# ══════════════════════════════════════════════════════════════════
+
 @app.route('/allocate/<int:deadstock_id>', methods=['POST'])
 @login_required
 @role_required('Stock_Allocation')
@@ -1041,9 +1041,9 @@ def allocate(deadstock_id):
         cur.close(); db.close()
     return redirect(url_for('show_table', table_name='DEADSTOCK'))
 
-# ══════════════════════════════════════════════════════════════════
+
 # UPDATE HEAD PASSWORD
-# ══════════════════════════════════════════════════════════════════
+
 @app.route('/update_head/<int:head_id>', methods=['GET','POST'])
 @login_required
 @role_required('Admin')
@@ -1069,9 +1069,9 @@ def update_head(head_id):
     cur.close(); db.close()
     return render_template('update_head.html', head=head, msg=msg)
 
-# ══════════════════════════════════════════════════════════════════
+
 # DELETE BRANCH
-# ══════════════════════════════════════════════════════════════════
+
 @app.route('/delete/branch/<int:branch_id>', methods=['POST'])
 @login_required
 @role_required('Admin')
@@ -1086,15 +1086,8 @@ def delete_branch(branch_id):
                only to satisfy the DB FK constraint; the DELETED_BRANCH archive
                preserves all branch info and the original Branch_ID is kept in
                DELETED_BRANCH for reporting lookups.
-               NOTE: If you removed the DEADSTOCK Branch_ID FK (ON DELETE SET NULL
-               or dropped it entirely) in your ALTER script, STEP 4 is not needed.
       STEP 5 – Delete the BRANCH row.
 
-    ⚠  PREREQUISITE: The FK on DEADSTOCK(Branch_ID) must allow branch deletion.
-       Run this in MySQL before using this route:
-         ALTER TABLE DEADSTOCK DROP FOREIGN KEY <fk_name>;
-         ALTER TABLE DEADSTOCK ADD CONSTRAINT fk_deadstock_branch
-           FOREIGN KEY (Branch_ID) REFERENCES BRANCH(Branch_ID) ON DELETE SET NULL;
        This lets Branch_ID in DEADSTOCK become NULL when a branch is deleted,
        while DELETED_BRANCH preserves all branch history for reporting.
     """
@@ -1120,8 +1113,6 @@ def delete_branch(branch_id):
                        VALUES (%s, %s, %s, %s, %s, %s)""", row)
 
         # STEP 5: Delete the BRANCH row.
-        # If your FK is ON DELETE SET NULL, DEADSTOCK.Branch_ID will become NULL
-        # automatically.  The DELETED_BRANCH table preserves history for reports.
         cur.execute("DELETE FROM BRANCH WHERE Branch_ID=%s", (branch_id,))
         db.commit()
 
@@ -1139,9 +1130,9 @@ def delete_branch(branch_id):
 
     return redirect(url_for('show_table', table_name='BRANCH'))
 
-# ══════════════════════════════════════════════════════════════════
+
 # DELETE WAREHOUSE
-# ══════════════════════════════════════════════════════════════════
+
 @app.route('/delete/warehouse/<int:wh_id>', methods=['POST'])
 @login_required
 @role_required('Admin')
@@ -1191,9 +1182,9 @@ def reassign_warehouse(wh_id):
                            warehouse=warehouse, branches=branches,
                            other_warehouses=other_warehouses, msg=msg)
 
-# ══════════════════════════════════════════════════════════════════
+
 # DELETED RECORDS
-# ══════════════════════════════════════════════════════════════════
+
 @app.route('/deleted/<entity>')
 @login_required
 @role_required('Admin')
@@ -1217,9 +1208,9 @@ def deleted(entity):
                            all_branches=[],all_cities_br=[],all_cities_wh=[],
                            all_roles=[],all_sizes=[],all_alloc=[],all_sq=[])
 
-# ══════════════════════════════════════════════════════════════════
+
 # CHANGE SET 4 – DOWNLOAD BRANCH REPORT AS PDF
-# ══════════════════════════════════════════════════════════════════
+
 @app.route('/download_report/<int:branch_id>')
 @login_required
 def download_report(branch_id):
