@@ -116,6 +116,5 @@ Dead-Stock_Management_System/
 │
 ├── app.py
 ├── templates/
-├── static/
 └── database/
 ```
