@@ -22,11 +22,11 @@ from reportlab.lib.enums import TA_CENTER, TA_LEFT, TA_RIGHT
 app = Flask(__name__)
 app.secret_key = 'deadstock_secret_key_2024'
 
-DB_CONFIG = dict(host='127.0.0.1', user='root', password='Samruddhi@123', database='deadstock_db')
+DB_CONFIG = dict(host='127.0.0.1', user='root', password='****', database='deadstock_db')
 
 # Email config
-MAIL_SENDER   = 'shalakaparhad21@gmail.com'      
-MAIL_PASSWORD = 'uozu otzm cpfm vujk'         
+MAIL_SENDER   = '***************@gmail.com'      
+MAIL_PASSWORD = '**** **** **** ****'         
 
 # In-memory OTP store
 otp_store = {}  # keyed by email
